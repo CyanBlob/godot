@@ -85,6 +85,7 @@ void GDScriptLanguageProtocol::on_client_connected(Ref<StreamPeerTCP> peer) {
     peers.push_back(peer);
     EditorNode::get_log()->add_message("Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 
+    // TODO: figure out proper way to get this params when each client connects
     Dictionary p_params;
     String root_uri = p_params["rootUri"];
     String root = p_params["rootPath"];
@@ -103,7 +104,7 @@ void GDScriptLanguageProtocol::on_client_connected(Ref<StreamPeerTCP> peer) {
 
       Dictionary params;
       params["path"] = workspace->root;
-      Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
+      Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
 
       String msg = JSON::print(request);
       msg = format_output(msg);
