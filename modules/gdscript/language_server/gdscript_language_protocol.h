@@ -31,12 +31,15 @@
 #ifndef GDSCRIPT_PROTOCAL_SERVER_H
 #define GDSCRIPT_PROTOCAL_SERVER_H
 
+#include "core/io/stream_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/io/tcp_server.h"
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
 #include "lsp.hpp"
 #include "modules/jsonrpc/jsonrpc.h"
-#include "modules/websocket/websocket_peer.h"
-#include "modules/websocket/websocket_server.h"
+#include <vector>
+
 
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
@@ -48,16 +51,15 @@ class GDScriptLanguageProtocol : public JSONRPC {
 
 	static GDScriptLanguageProtocol *singleton;
 
-	HashMap<int, Ref<WebSocketPeer> > clients;
-	WebSocketServer *server;
-	int lastest_client_id;
+  std::vector<Ref<StreamPeerTCP>> peers;
+	TCP_Server *server;
 
 	Ref<GDScriptTextDocument> text_document;
 	Ref<GDScriptWorkspace> workspace;
 
-	void on_data_received(int p_id);
-	void on_client_connected(int p_id, const String &p_protocal);
-	void on_client_disconnected(int p_id, bool p_was_clean_close);
+	void on_data_received(int bytes, Ref<StreamPeerTCP> peer);
+	void on_client_connected(Ref<StreamPeerTCP> peer);
+	void on_client_disconnected();
 
 	String process_message(const String &p_text);
 	String format_output(const String &p_text);
@@ -80,8 +82,7 @@ public:
 	Error start(int p_port, const IP_Address &p_bind_ip);
 	void stop();
 
-	void notify_all_clients(const String &p_method, const Variant &p_params = Variant());
-	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client = -1);
+	void notify_client(const String &p_method, const Variant &p_params = Variant());
 
 	bool is_smart_resolve_enabled() const;
 	bool is_goto_native_symbols_enabled() const;
